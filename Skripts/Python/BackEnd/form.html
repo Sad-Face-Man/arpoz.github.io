@@ -1,0 +1,233 @@
+<HTML><title>localhost/forma.html</title>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            background: repeating-linear-gradient(45deg, #FF0 0%, #CC0 2%, #880 4%, #000 5%);
+            font-size: 30px;
+            color: #F0B;
+            text-shadow: 0 0 5px #8800AA;
+        }
+        H1 {
+            font-size: 50px;
+            text-align: center;
+        }
+        #submitButton {
+             background-color: #000;
+             color: #F0F;
+        }
+        #submitButton[disabled] {
+             background-color: #000;
+             color: #440077;
+        }
+
+        input, select, textarea {
+            background-color: #8800AA;
+            color: #FF0 ;
+        }
+
+        .server-response {
+            background-color: #red;
+            padding: 20px;
+            border: 1px solid #ddd;
+}
+
+    </style>
+</head>
+<body>
+<h1>Регистрация</h1>
+<hr>
+<form method="POST" action="/cgi-bin/tutor6.py">
+    <h3>Заполните форму  и нажмите кнопку</h3>
+    <P><table>
+        <tr>
+            <th align=right>Имя:
+            <td> <input type=text name=name>
+        <tr>
+            <th align=right>Как часто вы играете в компьютерные игры?
+            <td><table>
+            <td><input type=radio name=playFrequency value=никогда>Никогда
+            <td><input type=radio name=playFrequency value=редко>Редко
+            <td><input type=radio name=playFrequency value=часто>Часто
+            </table>
+        <tr>
+            <th align=right>Должность:
+            <td><select name=job>
+                <option>Работающий
+                <option>Безработный
+                <option>Другое
+            </select>
+        <tr>
+            <th align=right>Используемые иговые платформы:
+            <td><table>
+            <td><input type=checkbox name=launcher value=Python>Steam
+            <td><input type=checkbox name=launcher value="Epic Games">Epic Games
+            <td><input type=checkbox name=launcher value="Battle.net">Battle.net
+            </table>
+        <tr>
+            <th align=right>О себе:
+            <td><textarea name=about cols=30 rows=2>
+                введите текст</textarea>
+        <tr>
+            <td><td><input type=checkbox hidden checked name=hid value="hidden_elem">hidden</td>
+        </tr>
+        <tr>
+            <td colspan=2 align=center>
+            <input id="submitButton" disabled type=submit value="ОТПРАВИТЬ">
+        </tr>
+    </table>
+</form>
+<hr>
+
+<script>
+    var necTxtFields=['name'], //набор имён обязательных полей
+        necRadioFields=['playFrequency']; //набор имён обязательных полей
+
+/*Обновление статуса кнопки отправки, при изменении данных в полях ввода*/
+    function setDisabledStatus(inStat)
+    {//inStat: true- установить desabled, иначе- снять desabled
+        var el = document.getElementById("submitButton");
+        if(!el)
+            console.log("Can't find submit button.");
+        else
+        {
+            if(inStat)
+            {
+                el.setAttribute("disabled","");
+            }
+            else
+            {
+                if(el.hasAttribute("disabled"))
+                    el.removeAttribute("disabled");
+            }
+        }
+    }
+    /*Навешивание обновления кнопки*/
+    //Заполнено ли текстовое поле
+    function doesTxtFill(name){
+        var elem = document.getElementsByName(name)[0];
+            if(!elem.value)
+                return false;
+                //isReady=false;
+            return true;
+    }
+     /*проверка радио-блока по имени.*/
+    function doesRadioFill(name){
+            var radioFlags = document.getElementsByName(name);
+            var hasChecked = false; // отмечен ли хотя бы один флаг из группы radio
+            for(let i=0, len = radioFlags.length; i < len ;i++)
+            {
+                if(radioFlags[i].checked)
+                    hasChecked = true;
+            }
+            if(!hasChecked)
+                ///isReady= false;
+                return false
+            return true;
+        }
+    /*Готовы ли все поля*/
+    function doesButtonReady(necTxtFields, necRadioFields)
+    {// массив оябзательных к заполнению полей:
+        // necRadioFields- тектовых
+        // necRadioFields- радио-кнопок
+        var isReady = true; // Все ли обязательные поля готовы.
+
+        /*Проверка текстовых полей (text)*/
+        necTxtFields.forEach(elemName => { // тут сокращённая запись,
+            isReady = doesTxtFill(elemName)}); // т.к. до этого isReady не менялся
+        //Проверка радио-блоков
+        necRadioFields.forEach(elemName => {
+            if(!doesRadioFill(elemName))
+                isReady = false;
+        });
+
+        if(isReady)
+            setDisabledStatus(false);
+        else
+            setDisabledStatus(true);
+    }
+    /*Проверка заполнения теквтового поля по target'у
+    + проверка на обязательность заполнения*/
+    function doesInputReady(target, necTxtFields)
+    {//Проверка заполнения обязательноо поля
+            targetName = target.name;
+        //проверка, обязательное ли это поле
+        if(necTxtFields.some(elem => targetName==elem))
+            if(target.value) // Заполнили поле- надо проверить остальные поля.
+                return true; //надо проверять поля
+            else // стёрли поле => надо обнулять кнопку.
+                return false; //не надо проверять поля.
+    }
+    /*Проверка заполнения радио-поля по target'у
+    + проверка на обязательность заполнения*/
+    function doesRadioBReady(target, necRadioFields)
+    {
+        //проверка, обязательное ли это поле
+        if(necRadioFields.some(elem => target.name==elem))
+        {
+            //проверка, отмечено ли что-то
+            if(doesRadioFill(target.name))
+                return true;
+            return false;
+        }
+    }
+
+    /*Фасад*/
+    function facade(event)
+    {
+        if(!event) alert("Несанкуционированное событие!");
+        else{
+            var checkFields=false, // надо ли проверять все поля
+                                    //для активации кнопки.
+                target = event.target,
+                targetType = target.type;
+            switch(targetType)
+            {
+            case "text":
+                {
+                    checkFields = doesInputReady(target, necTxtFields);
+                    if(checkFields)
+                        doesButtonReady(necTxtFields, necRadioFields);
+                    else
+                        setDisabledStatus(true);
+                    break;
+                }
+            case "radio":
+                {
+                    checkFields = doesRadioBReady(target, necRadioFields);
+                    if(checkFields)
+                        doesButtonReady(necTxtFields, necRadioFields);
+                    else
+
+                    break;
+                }
+
+            default: // не найден элемент по имени
+                //console.log("Facade error: can't find element \"", event.target.name, "\"");
+            }
+        }
+    }
+    /*(отслеживание измнений полей)*/
+    var inputs, tmpInputs;
+    /*В комментариях ниже наброски навешивания таргета
+    только на опред. поля*/
+
+    //getElementsBy.. возвращает КОЛЛЕКЦИЮ, а не массив
+    //inputs= document.getElementsByTagName("select"); //добавили все инпуты
+    //inputs=Array.from(inputs);
+    window.addEventListener("change", function(event){facade(event)});
+    //console.log(inputs);
+    /*inputs=Array.from(inputs);
+    tmpInputs=document.getElementsByTagName("select");
+    tmpInputs=Array.from(tmpInputs);
+    inputs.concat(tmpInputs);
+    tmpInputs=document.getElementsByTagName("textarea");
+    tmpInputs=Array.from(tmpInputs);
+    inputs.concat(tmpInputs);
+    foreach
+    input.addEventListener("change", function(event){facade(event)});*/
+    doesButtonReady(necTxtFields, necRadioFields);
+</script>
+
+</body>
+</HTML>
