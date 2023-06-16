@@ -1,2 +1,1 @@
-# arpoz.github.io
-Repos for site review
+https://sad-face-man.github.io/arpoz.github.io/
